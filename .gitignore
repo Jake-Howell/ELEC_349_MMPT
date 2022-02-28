@@ -1,32 +1,22 @@
-# Prerequisites
-*.d
-
-# Compiled Object files
-*.slo
-*.lo
-*.o
-*.obj
-
-# Precompiled Headers
-*.gch
-*.pch
-
-# Compiled Dynamic libraries
-*.so
-*.dylib
-*.dll
-
-# Fortran module files
-*.mod
-*.smod
-
-# Compiled Static libraries
-*.lai
-*.la
-*.a
-*.lib
-
-# Executables
-*.exe
-*.out
-*.app
+﻿*.dep
+*.sct
+*.lnp
+*.htm
+*.axf
+*.iex
+Objects/startup_stm32f429xx.d
+Objects/startup_stm32f429xx.o
+Objects/system_stm32f4xx.d
+Objects/system_stm32f4xx.o
+DebugConfig
+Listings
+Objects
+*.scvd
+*.jacob
+*.jhowell3
+*.uvoptx
+*.uvprojx
+RTE
+adc code.uvguix.MUNT
+adc code.uvguix.smacveigh
+ADC.h~RF3cce729f.TMP
