@@ -1,4 +1,4 @@
-
+#include "init.h"
 void init(void)
 {
 	config_GPIOA();
@@ -7,20 +7,8 @@ void init(void)
 	
 	config_ADC1();
 	config_DAC();
-	
 	SysTick_Init();
 	
-}
-
-void read_adc(void)
-{
-	unsigned char i;
-	ADC1_START();
-	for(i=0; i<2; i++)
-	{
-		while(!(ADC1_EOC));
-		adc_data[i]=ADC1->DR;
-	}
 }
 
 void set_PB0_PWM_mode(unsigned int Fsw)
@@ -34,8 +22,8 @@ void set_PB0_PWM_mode(unsigned int Fsw)
 	start_timer3();
 }
 
-void set_PWM_duty(float d)
-{
-	if(d>1.0f) d=1.0f;
-	T3CCR3=(unsigned short)(d*(float)PR3);
-}
+//void set_PWM_duty(float d)
+//{
+//	if(d>1.0f) d=1.0f;
+//	T3CCR3=(unsigned short)(d*(float)PR3);
+//}

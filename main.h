@@ -1,3 +1,6 @@
+#ifndef _MAIN_H_
+#define _MAIN_H_
+
 #include <stm32f4xx.h>
 #include "TIMERS.h"
 #include "ADC.h"
@@ -6,9 +9,6 @@
 #include "GPIO.h"
 #include <math.h>
 
-
-#define PA1_DATA	adc_data[0]
-#define PA2_DATA	adc_data[1]
 
 
 #define set_PB0() 				GPIO_setpin(GPIOB,0)
@@ -26,10 +26,8 @@
 #define blue_led_on()			GPIO_setpin(GPIOD,15)
 #define blue_led_off()		GPIO_clrpin(GPIOD,15)
 
-#define MAX_DUTY 100
-#define MIN_DUTY 0
+//unsigned short adc_data[2]={0};
+//#include "delay.c"
+//#include "init.c"
 
-
-unsigned short adc_data[2]={0};
-#include "delay.c"
-#include "init.c"
+#endif

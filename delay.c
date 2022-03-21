@@ -1,3 +1,5 @@
+#include "main.h"
+#include "stm32f407xx.h"                  // Device header
 
 volatile unsigned int sysTickCounter;
 

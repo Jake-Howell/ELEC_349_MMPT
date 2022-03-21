@@ -1,5 +1,14 @@
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include "PLL_Config.h"
 #include "main.h"
+#include "init.h"
+#include "delay.h"
+#include "USART.h"
+#include "PeturbObserb.h"
+
 
 //------------------------------------------------------------------------------------
 //------------------------------------------------------------------------------------
@@ -28,78 +37,20 @@
 //DELAYS
 //CALL THE "delay_nus(<val>)" TO GENERATE AN ACCURATE MICROSECONDS DELAY, <val> IS THE NUMBER OF MICROSECONDS TO DELAY
 //CALL THE "delay_nms(<val>)" TO GENERATE AN ACCURATE MILLISECONDS DELAY, <val> IS THE NUMBER OF MILLISECONDS TO DELAY
-
+PeturbObserb PandO();
 int main(void)
 {
 	PLL_Config_HSE();
 	init();	//run basic init - DO NOT REMOVE
-	green_led_on();	
-	
-//ANY OTHER INIT CODE GOES HERE
-//-----------------------------
-	unsigned short power = 0;
-	unsigned short power_prev = 0;
-	unsigned short duty = 0;
-	set_PB0_PWM_mode(1000000); //set PWM to 1MHz frequency
-	
-	
-	
-//-----------------------------
+	set_PB0_PWM_mode(10000); //set PWM to 10KHz frequency
+
 	while(1)
 	{
-		
-	//MAIN LOOP CODE GOES HERE
-	//------------------------
-		read_adc();
-		power = 6.06*PA1_DATA * PA2_DATA; //PA1 (voltage) * PA2(current)
-		
-		if(power > power_prev){
-			//if current power if greater than previous power
-			duty += 1;
-			green_led_on();
-			orange_led_off();
-			red_led_off();
-			
-		}else if(power < power_prev){
-			//if current power if less than previous power
-			duty -= 1;
-			green_led_off();
-			orange_led_off();
-			red_led_on();
-			
-		}else{
-			//if power hasn't changed, do nothing
-			green_led_off();
-			orange_led_on();
-			red_led_off();
-		}
-		
-		//adding max and min boundries
-		if(duty > MAX_DUTY){
-			duty = MAX_DUTY;
-		}
-		if(duty < MIN_DUTY){
-			duty = MIN_DUTY;
-		}
-		
-		set_PWM_duty(duty);
-		power_prev = power; //after change, store power in previous power
-		
-		
-		
-		
-		//example code - THIS CAN BE DELETED
-		orange_led_on();	//turn on the orange led
-		delay_nms(100);		//delay 100ms
-		orange_led_off();	//turn off the orange led
-		delay_nms(200);		//delay 50ms
+		PandO.evaluate();
+				
 
-	
-
-		
-		
-
-	//------------------------
 	}//end loop
 }//end main
-
+#ifdef __cplusplus
+}
+#endif
