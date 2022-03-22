@@ -1,15 +1,19 @@
-#ifndef _PO_H__
-#define _PO_H__
+#ifndef _FOCV_H__
+#define _FOCV_H__
 #ifdef __cplusplus
 extern "C" {
 #endif
 	
 #include "PowerTracking.h"
 	
-class PeturbObserb : public PowerTracking{
+class IncConduct : public PowerTracking{
 		public:
-			PeturbObserb();
+			IncConduct();
+			//IncConduct();
 			void evaluate() override;
+
+		private:
+
 
 };
 

@@ -5,7 +5,6 @@
 #include "TIMERS.h"
 #include "ADC.h"
 #include "DAC.h"
-//#include "USART.h"
 #include "GPIO.h"
 #include <math.h>
 
@@ -26,8 +25,5 @@
 #define blue_led_on()			GPIO_setpin(GPIOD,15)
 #define blue_led_off()		GPIO_clrpin(GPIOD,15)
 
-//unsigned short adc_data[2]={0};
-//#include "delay.c"
-//#include "init.c"
 
 #endif
