@@ -10,6 +10,9 @@ class PeturbObserb : public PowerTracking{
 		public:
 			PeturbObserb();
 			void evaluate() override;
+		protected:
+			float delta_p;
+			float delta_d;
 
 };
 

@@ -24,5 +24,6 @@ void PeturbObserb::evaluate(){
 	duty[PREVIOUS] = duty[NOW];
 	duty[NOW] = next_duty;
 	set_duty(duty[NOW]);
+	power[PREVIOUS] = power[NOW];
 }
 

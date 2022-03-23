@@ -18,6 +18,7 @@ class PowerTracking{
 		float get_max_duty();
 		float get_min_duty();
 		float get_duty_step();
+		
 	
 		void set_power(float val);
 		void set_avg_power(float val);

@@ -13,8 +13,11 @@ class IncConduct : public PowerTracking{
 			void evaluate() override;
 
 		private:
-
-
+			
+		volatile float V[2];
+		volatile float I[2];
+		volatile float deltaV;
+		volatile float deltaI;
 };
 
 #ifdef __cplusplus

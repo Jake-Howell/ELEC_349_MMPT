@@ -19,7 +19,7 @@ PowerTracking::PowerTracking(float max_duty, float min_duty, float duty_step){
 	this->duty[NOW] = 0.0f;
 	this->power[PREVIOUS] = 0.0f;
 	this->power[NOW] = 0.0f;
-	this->avg_power = 0.0f;
+	this->avg_power = 0.
 	this->voltage = 0.0f;
 	this->current = 0.0f;
 }
