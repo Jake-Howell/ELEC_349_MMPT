@@ -27,10 +27,11 @@ while (SysTick_Config(SystemCoreClock/1000) != 0) {} // One SysTick interrupt no
 //while (sysTickCounter != 0) {}
 //}
 
-void delay_nms(unsigned int n) //delay of n milliseconds
+int delay_nms(unsigned int n) //delay of n milliseconds
 {
 	sysTickCounter=n;
 	while(sysTickCounter>0);
+	return 1;
 }
 
 void SysTick_Handler(void) 

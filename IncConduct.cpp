@@ -7,8 +7,9 @@ IncConduct::IncConduct(){
 
 void IncConduct::evaluate()
 {
+	
 	this->read_adc();
-	delta_d = duty[NOW] - duty[PREVIOUS];		//calculate duty difference
+	
 	V[NOW] = this->voltage;
 	I[NOW] = this->current;
 	
@@ -22,9 +23,9 @@ void IncConduct::evaluate()
 			//return
 		}else if(deltaI>0)
 		{
-				next_duty = duty[NOW] + delta_d;
+				next_duty = duty[NOW] + DUTY_STEP[UP];
 		}else{ //less than
-			next_duty = duty[NOW] - delta_d;
+			next_duty = duty[NOW] - DUTY_STEP[DOWN];
 		}
 	}else 
 	{
@@ -33,16 +34,16 @@ void IncConduct::evaluate()
 			//return
 		}else if((deltaI/deltaV) > -(I[NOW]/V[NOW]))
 		{
-			next_duty = duty[NOW] + delta_d;
+			next_duty = duty[NOW] + DUTY_STEP[UP];
 		}else //less than
 		{
-			next_duty = duty[NOW] - delta_d;
+			next_duty = duty[NOW] - DUTY_STEP[DOWN];
 		}
 	}
 		
 	duty[PREVIOUS] = duty[NOW];
 	duty[NOW] = next_duty;
-	
+	set_duty(next_duty);
 	V[PREVIOUS] = V[NOW];
 	I[PREVIOUS] = I[NOW];
 }
