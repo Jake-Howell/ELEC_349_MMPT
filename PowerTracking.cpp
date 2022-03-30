@@ -3,7 +3,7 @@ PowerTracking::PowerTracking(){
 	this->MAX_DUTY = 0.9f;
 	this->MIN_DUTY = 0.1f;
 	this->DUTY_STEP[UP] = 0.01f;
-	this->DUTY_STEP[DOWN] = 0.01f;
+	this->DUTY_STEP[DOWN] = 0.02f;
 	this->duty[PREVIOUS] = 0.0f;
 	this->duty[NOW] = 0.0f;
 	this->power[PREVIOUS] = 0.0f;
@@ -23,9 +23,42 @@ PowerTracking::PowerTracking(float max_duty, float min_duty){
 	this->voltage = 0.0f;
 	this->current = 0.0f;
 }
+void PowerTracking::sweep_duty(){
+	float step = 0.01f;
+	for (float i = MIN_DUTY; i < MAX_DUTY; i += step){
+				set_duty(i);
+				delay_nms(100);
+				read_adc();
+				peakCheck();
+			}
+//	for (float i = MAX_DUTY; i > MIN_DUTY; i -= step){
+//				set_duty(i);
+//				delay_nms(100);
+//			}
+	
+}
 
-void PowerTracking::read_adc(){
+void PowerTracking::set_threshold(float t){
+	if(t > 1.0f){t=1.0f;}
+	else if(t<0.0f){t= 0.0f;}
+	this->threshold = t;
+}
+
+float PowerTracking::get_peak_duty(){
+	return MAX_POWER_DUTY;
+}
+
+bool PowerTracking::peakCheck(){
+	if (power[NOW] > MAX_POWER){
+		MAX_POWER = power[NOW];
+		MAX_POWER_DUTY = duty[NOW];
+		return true;
+	}
+	return false; //if new peak not detected return false
+}
+float PowerTracking::read_adc(){
 	unsigned char i;
+	float pwr;
 	float adc_data[2];
 	ADC1_START();
 	for(i=0; i<2; i++)
@@ -35,7 +68,17 @@ void PowerTracking::read_adc(){
 	}
 	this->voltage = adc_data[0];
 	this->current = adc_data[1];
-	this->power[NOW] = voltage*current;
+	pwr = voltage*current;
+	if (pwr > MAX_POWER){
+		this->MAX_POWER = pwr;
+		this->MAX_POWER_DUTY = duty[NOW];
+	}
+	this->avg_power += (avg_power + pwr)/2;
+	return pwr;
+}
+
+void PowerTracking::set_OS_AVG_PWR(float p){
+	OS_AVG_PWR = p;
 }
 
 float PowerTracking::get_power(int index){
