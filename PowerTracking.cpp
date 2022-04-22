@@ -9,8 +9,8 @@ PowerTracking::PowerTracking(){
 	this->power[PREVIOUS] = 0.0f;
 	this->power[NOW] = 0.0f;
 	this->avg_power = 0.0f;
-	this->voltage = 0.0f;
-	this->current = 0.0f;
+	this->voltage[NOW] = 0.0f;
+	this->current[NOW] = 0.0f;
 }
 PowerTracking::PowerTracking(float max_duty, float min_duty){
 	this->MAX_DUTY = max_duty;
@@ -20,21 +20,33 @@ PowerTracking::PowerTracking(float max_duty, float min_duty){
 	this->power[PREVIOUS] = 0.0f;
 	this->power[NOW] = 0.0f;
 	this->avg_power = 0.0f;
-	this->voltage = 0.0f;
-	this->current = 0.0f;
+	this->voltage[NOW] = 0.0f;
+	this->current[NOW] = 0.0f;
 }
+
+void PowerTracking::auto_sample_setup(int frq){
+	int psc, arr;
+	
+	psc = (SystemCoreClock/1000) - 1; //calculate PSC value to tick every ns
+	arr = (1000000000/frq) - 1;				//work out how many nano seconds for given freq
+	
+	
+	TIM2->DIER |= TIM_DIER_UIE; //interrupt enable
+	TIM2->PSC = psc - 1;				//psc
+	TIM2->ARR = arr - 1;				//arr
+	TIM2->CNT = 0;							//cnt
+	NVIC_EnableIRQ(TIM2_IRQn);	//set interrupt
+	TIM2->CR1|= TIM_CR1_CEN;		//enable timer
+}
+
 void PowerTracking::sweep_duty(){
 	float step = 0.01f;
 	for (float i = MIN_DUTY; i < MAX_DUTY; i += step){
 				set_duty(i);
-				delay_nms(100);
+				delay_nms(50);
 				read_adc();
 				peakCheck();
 			}
-//	for (float i = MAX_DUTY; i > MIN_DUTY; i -= step){
-//				set_duty(i);
-//				delay_nms(100);
-//			}
 	
 }
 
@@ -66,9 +78,14 @@ float PowerTracking::read_adc(){
 		while(!(ADC1_EOC));
 		adc_data[i]= (float)(ADC1->DR)/4096;
 	}
-	this->voltage = adc_data[0];
-	this->current = adc_data[1];
-	pwr = voltage*current;
+	this->voltage[NOW] = adc_data[0];
+	this->current[NOW] = adc_data[1];
+	
+	delta_v = voltage[NOW] - voltage[PREVIOUS];
+	delta_c = current[NOW] - current[PREVIOUS];
+	
+	pwr = voltage[NOW]*current[NOW];
+	
 	if (pwr > MAX_POWER){
 		this->MAX_POWER = pwr;
 		this->MAX_POWER_DUTY = duty[NOW];
@@ -77,8 +94,19 @@ float PowerTracking::read_adc(){
 	return pwr;
 }
 
-void PowerTracking::set_OS_AVG_PWR(float p){
+void PowerTracking::set_OS_AVG_PWR(float p)
+{
 	OS_AVG_PWR = p;
+}
+
+void PowerTracking::set_OS_AVG_VOL(float v)
+{
+	OS_AVG_VOL = v;
+}
+
+void PowerTracking::set_OS_AVG_CUR(float c)
+{
+	OS_AVG_CUR = c;
 }
 
 float PowerTracking::get_power(int index){
@@ -121,4 +149,14 @@ void PowerTracking::set_max_duty(float val){
 }
 void PowerTracking::set_min_duty(float val){
 	this->MIN_DUTY = val;
+}
+
+float PowerTracking::getVoltage()
+{
+	return this->voltage[NOW];
+}
+
+float PowerTracking::getCurrent()
+{
+	return this->current[NOW];
 }
