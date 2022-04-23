@@ -1,7 +1,7 @@
 #include "PowerTracking.h"
 PowerTracking::PowerTracking(){
-	this->MAX_DUTY = 0.9f;
-	this->MIN_DUTY = 0.1f;
+	this->MAX_DUTY = 0.95f;
+	this->MIN_DUTY = 0.05f;
 	this->DUTY_STEP[UP] = 0.01f;
 	this->DUTY_STEP[DOWN] = 0.02f;
 	this->duty[PREVIOUS] = 0.0f;
@@ -11,6 +11,9 @@ PowerTracking::PowerTracking(){
 	this->avg_power = 0.0f;
 	this->voltage[NOW] = 0.0f;
 	this->current[NOW] = 0.0f;
+	this->head = 0;
+	this->tail =0;
+	this->currentBuffSize = 0;
 }
 PowerTracking::PowerTracking(float max_duty, float min_duty){
 	this->MAX_DUTY = max_duty;
@@ -22,29 +25,42 @@ PowerTracking::PowerTracking(float max_duty, float min_duty){
 	this->avg_power = 0.0f;
 	this->voltage[NOW] = 0.0f;
 	this->current[NOW] = 0.0f;
+	this->head = 0;
+	this->tail =0;
+	this->currentBuffSize = 0;
 }
 
-void PowerTracking::auto_sample_setup(int frq){
-	int psc, arr;
-	
-	psc = (SystemCoreClock/1000) - 1; //calculate PSC value to tick every ns
-	arr = (1000000000/frq) - 1;				//work out how many nano seconds for given freq
-	
-	
-	TIM2->DIER |= TIM_DIER_UIE; //interrupt enable
-	TIM2->PSC = psc - 1;				//psc
-	TIM2->ARR = arr - 1;				//arr
-	TIM2->CNT = 0;							//cnt
-	NVIC_EnableIRQ(TIM2_IRQn);	//set interrupt
-	TIM2->CR1|= TIM_CR1_CEN;		//enable timer
+
+void PowerTracking::bufferPut(float data[2]){
+	//buffer[0][head] = data[0];
+	//buffer[1][head] = data[1];
+	buffer[head].voltage = data[0];
+	buffer[head].current = data[1];
+	head++;
+	if (head >= BUFFER_SIZE){
+		head = 0;
+	}
+	if (currentBuffSize < (BUFFER_SIZE)){
+		currentBuffSize++;
+	}
 }
+
+sample_t PowerTracking::bufferPop()
+{
+	sample_t hack;
+	hack.voltage = buffer[tail].voltage;
+	hack.current = buffer[tail].current;
+	tail++;
+	return hack;
+}
+
 
 void PowerTracking::sweep_duty(){
-	float step = 0.01f;
-	for (float i = MIN_DUTY; i < MAX_DUTY; i += step){
+
+	for (float i = MIN_DUTY; i < MAX_DUTY; i += DUTY_STEP[UP]){
 				set_duty(i);
-				delay_nms(50);
-				read_adc();
+				delay_nms(100);
+				updateValues();
 				peakCheck();
 			}
 	
@@ -68,30 +84,88 @@ bool PowerTracking::peakCheck(){
 	}
 	return false; //if new peak not detected return false
 }
-float PowerTracking::read_adc(){
-	unsigned char i;
-	float pwr;
+sample_t PowerTracking::read_adc(){
+	sample_t sample;
+	red_led_on();
+	red_led_off();
 	float adc_data[2];
 	ADC1_START();
-	for(i=0; i<2; i++)
-	{
+	for(int i=0; i<2; i++){
 		while(!(ADC1_EOC));
 		adc_data[i]= (float)(ADC1->DR)/4096;
+		//get
 	}
-	this->voltage[NOW] = adc_data[0];
-	this->current[NOW] = adc_data[1];
 	
+	sample.voltage = adc_data[0];
+	sample.current = adc_data[1];
+	
+	bufferPut(adc_data);
+	
+	return sample;
+}
+
+void PowerTracking::calculateRMS(){
+	sample_t sum_x2;
+	sample_t avg_x2;
+	sample_t RMS;
+	
+		for (int i = 0; i<BUFFER_SIZE; i++){
+			//sum_x2[x] += buffer[x][i]*buffer[x][i]; //calculate square and add to total
+			sum_x2.voltage += buffer[i].voltage*buffer[i].voltage;
+			sum_x2.current += buffer[i].current*buffer[i].current;
+			
+		}
+		avg_x2.voltage = sum_x2.voltage/BUFFER_SIZE;		//average samples
+		avg_x2.current = sum_x2.current/BUFFER_SIZE;		//average samples
+		RMS.voltage = sqrtf(avg_x2.voltage);
+		RMS.current = sqrtf(avg_x2.current);
+	
+	
+	V_RMS[PREVIOUS] = V_RMS[NOW];
+	I_RMS[PREVIOUS] = I_RMS[NOW];
+	P_RMS[PREVIOUS] = P_RMS[NOW];
+		
+	V_RMS[NOW] = RMS.voltage;
+	I_RMS[NOW] = RMS.current;
+	P_RMS[NOW] = RMS.current*RMS.voltage;
+}
+
+void PowerTracking::updateValues(){
+	
+	
+
+	voltage[PREVIOUS] = voltage[NOW];
+	current[PREVIOUS] = current[NOW];
+	power[PREVIOUS] = power[NOW];
+//	this->voltage[NOW] = buffer[head].voltage; //get latest data off the buffer
+//	this->current[NOW] = buffer[head].current;
+	//delta_v = V_RMS[NOW] - V_RMS[PREVIOUS];
+	//delta_c = I_RMS[NOW] - I_RMS[PREVIOUS];
+
+	
+	
+	//IF INSTANT
+//	//sample_t newsample = bufferPop();	//get last item on buffer
+//	this->voltage[NOW] = buffer[head].voltage; //get latest data off the buffer
+//	this->current[NOW] = buffer[head].current;
+	
+	
+	//IF RMS
+	calculateRMS();
+	this->voltage[NOW] = V_RMS[NOW];
+	this->current[NOW] = I_RMS[NOW];
+	
+	//Power depends on above
+	this->power[NOW] = voltage[NOW]*current[NOW];
+	
+	
+	
+	//update deltas
 	delta_v = voltage[NOW] - voltage[PREVIOUS];
 	delta_c = current[NOW] - current[PREVIOUS];
+	this->delta_p = power[NOW] - power[PREVIOUS]; //calculate power differance
 	
-	pwr = voltage[NOW]*current[NOW];
 	
-	if (pwr > MAX_POWER){
-		this->MAX_POWER = pwr;
-		this->MAX_POWER_DUTY = duty[NOW];
-	}
-	this->avg_power += (avg_power + pwr)/2;
-	return pwr;
 }
 
 void PowerTracking::set_OS_AVG_PWR(float p)
@@ -139,6 +213,7 @@ void PowerTracking::set_avg_power(float val){
 void PowerTracking::set_duty(float d){
 	d = (d<this->MIN_DUTY) ? MIN_DUTY : d;
 	d = (d>this->MAX_DUTY) ? MAX_DUTY : d;
+	this->duty[PREVIOUS] = duty[NOW];
 	this->duty[NOW] = d;
 	
 	if(d>1.0f) d=1.0f;
