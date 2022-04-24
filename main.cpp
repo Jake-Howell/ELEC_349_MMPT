@@ -24,11 +24,12 @@ int main(void)
 	
 	PLL_Config_HSE();
 	init();	//run basic init - DO NOT REMOVE
-	TIM2_INIT(40000);	//set sample frequency to 40KHz
-	set_PB0_PWM_mode(500000); //set PWM to 500KHz frequency
+	TIM2_INIT(250000);	//set sample frequency to 250KHz
+	PandO.set_PB0_PWM_mode(100000); //set PWM to 100KHz frequency
 
 	
 	//PandO.sweep_duty();	//sweep and locate max power point
+	PandO.set_sampleRate(250000);
 	PandO.set_duty(0.5);
 	//PandO.set_duty(PandO.get_peak_duty());
 	//PandO.set_threshold(0.8); //reset MPP if current power is below 80% of peak power
@@ -36,7 +37,7 @@ int main(void)
 	
 	while(1)
 	{
-		delay_nms(30);
+		
 		PandO.evaluate();
 		//ICon.evaluate();
 	}//end loop
@@ -52,9 +53,10 @@ void TIM2_IRQHandler(void){
 void TIM2_INIT(int frq){
 	RCC->APB1ENR |= RCC_APB1ENR_TIM2EN;	//ENABLE tim2 to run on APB1 (Advanced Perphieral Bus 1's 
 	volatile int psc, arr;
+	const int scalar = 12000000;
 	//SCC = 168 000 000
-	psc = (SystemCoreClock/24000000); //calculate PSC to get 1/24th us ticks
-	arr = (24000000/frq);				//work out how many nano seconds for given freq
+	psc = ((SystemCoreClock/2)/scalar); //calculate PSC to get 1/24th us ticks
+	arr = (scalar/frq);				//work out how many nano seconds for given freq
 	
 	
 	TIM2->DIER |= TIM_DIER_UIE; //interrupt enable

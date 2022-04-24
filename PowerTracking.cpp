@@ -182,6 +182,30 @@ void PowerTracking::set_OS_AVG_CUR(float c)
 {
 	OS_AVG_CUR = c;
 }
+void PowerTracking::set_sampleRate(int Frq){
+	sampleFrq = Frq;
+	dynamicDelay_ms = ((BUFFER_SIZE*1000)/Frq); //calculate time taken to fill buffer in micro seconds
+	
+	volatile int psc, arr;
+	const int scalar = 12000000;
+	//SCC = 168 000 000
+	psc = ((SystemCoreClock/2)/scalar); //calculate PSC to get 1/24th us ticks
+	arr = (scalar/Frq);				//work out how many nano seconds for given freq
+	
+	TIM2->PSC = psc -1;
+	TIM2->ARR = arr -1;
+}
+void PowerTracking::set_PB0_PWM_mode(unsigned int Fsw)
+{
+	PWMFsw = Fsw;
+	GPIO_setmode(GPIOB,0,2);	//PB0 alternate function
+	config_TIM3();
+	PSC3=0;
+	TMR3=0;
+	PR3=(unsigned short)(SystemCoreClock/(2*Fsw));
+	T3CCR3=(unsigned short)(PR3/10);
+	start_timer3();
+}
 
 float PowerTracking::get_power(int index){
 	return this->power[index];

@@ -4,7 +4,7 @@
 PeturbObserb::PeturbObserb(){
 	this->MAX_DUTY = 0.95f;
 	this->MIN_DUTY = 0.05f;
-	this->DUTY_STEP[UP] 	= 0.008f;
+	this->DUTY_STEP[UP] 	= 0.004f;
 	this->DUTY_STEP[DOWN] = 0.002f;
 }
 void PeturbObserb::evaluate(){
@@ -28,14 +28,13 @@ void PeturbObserb::evaluate(){
      }	
 	}
 	
-	power[PREVIOUS] = OS_AVG_PWR;
 //	if (powerGood() == false){
 //		set_duty(MAX_POWER_DUTY);	//if power isnt good, set duty to value used while hitting max power
 //	}else{
 //		set_duty(next_duty);
 //	}
 	set_duty(next_duty);
-
+	delay_nms(dynamicDelay_ms); //delay until buffer is full of new samples
 
 }
 

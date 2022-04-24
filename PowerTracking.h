@@ -43,6 +43,8 @@ class PowerTracking{
 		void set_OS_AVG_PWR(float p);
 		void set_OS_AVG_VOL(float v);
 		void set_OS_AVG_CUR(float c);
+		void set_sampleRate(int Frq);
+		void set_PB0_PWM_mode(unsigned int Fsw);
 		
 		void updateValues();
 		
@@ -72,6 +74,11 @@ class PowerTracking{
 		volatile float MAX_DUTY;
 		volatile float MIN_DUTY;
 		volatile float DUTY_STEP[2];
+	
+		volatile unsigned int sampleFrq;
+		volatile unsigned int dynamicDelay_ms;
+	
+		volatile unsigned int PWMFsw;
 	
 		volatile float voltage[2];
 		volatile float current[2];
