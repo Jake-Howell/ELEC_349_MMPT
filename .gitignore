@@ -10,6 +10,7 @@ Objects/system_stm32f4xx.d
 Objects/system_stm32f4xx.o
 DebugConfig
 Listings
+LT_Spice
 Objects
 *.scvd
 *.jacob

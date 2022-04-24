@@ -25,7 +25,7 @@ int main(void)
 	PLL_Config_HSE();
 	init();	//run basic init - DO NOT REMOVE
 	TIM2_INIT(250000);	//set sample frequency to 250KHz
-	PandO.set_PB0_PWM_mode(100000); //set PWM to 100KHz frequency
+	PandO.set_PB0_PWM_mode(120000); //set PWM to 100KHz frequency
 
 	
 	//PandO.sweep_duty();	//sweep and locate max power point
@@ -39,6 +39,7 @@ int main(void)
 	{
 		
 		PandO.evaluate();
+
 		//ICon.evaluate();
 	}//end loop
 }//end main

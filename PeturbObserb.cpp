@@ -34,7 +34,7 @@ void PeturbObserb::evaluate(){
 //		set_duty(next_duty);
 //	}
 	set_duty(next_duty);
-	delay_nms(dynamicDelay_ms); //delay until buffer is full of new samples
+	delay_nms(30); //delay until buffer is full of new samples
 
 }
 

@@ -85,21 +85,20 @@ bool PowerTracking::peakCheck(){
 	return false; //if new peak not detected return false
 }
 sample_t PowerTracking::read_adc(){
+	float adc_data[2];
 	sample_t sample;
 	red_led_on();
-	red_led_off();
-	float adc_data[2];
 	ADC1_START();
+	red_led_off();
 	for(int i=0; i<2; i++){
 		while(!(ADC1_EOC));
 		adc_data[i]= (float)(ADC1->DR)/4096;
 		//get
 	}
-	
 	sample.voltage = adc_data[0];
 	sample.current = adc_data[1];
-	
 	bufferPut(adc_data);
+	
 	
 	return sample;
 }
