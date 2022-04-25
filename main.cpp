@@ -25,6 +25,7 @@ int main(void)
 	PLL_Config_HSE();
 	init();	//run basic init - DO NOT REMOVE
 	TIM2_INIT(250000);	//set sample frequency to 250KHz
+	/*
 	PandO.set_PB0_PWM_mode(120000); //set PWM to 100KHz frequency
 
 	
@@ -33,21 +34,25 @@ int main(void)
 	PandO.set_duty(0.5);
 	//PandO.set_duty(PandO.get_peak_duty());
 	//PandO.set_threshold(0.8); //reset MPP if current power is below 80% of peak power
+	*/
 	
+	ICon.set_PB0_PWM_mode(120000); // set PWM to 120kHz frequency
+	ICon.set_sampleRate(250000);
+	ICon.set_duty(0.5);
 	
 	while(1)
 	{
 		
-		PandO.evaluate();
+		//PandO.evaluate();
 
-		//ICon.evaluate();
+		ICon.evaluate();
 	}//end loop
 }//end main
 
 void TIM2_IRQHandler(void){
 	TIM2->SR &= ~TIM_SR_UIF;				//clear interrupt flag in status register
-	PandO.read_adc();
-	//ICon.read_adc();
+	//PandO.read_adc();
+	ICon.read_adc();
 }
 
 //WARNING Frq shoudnt exceed 1MHz

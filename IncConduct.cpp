@@ -2,13 +2,16 @@
 
 
 IncConduct::IncConduct(){
-	duty[NOW] = 0.1; //default value
+	this->MAX_DUTY = 0.95f;
+	this->MIN_DUTY = 0.05f;
+	this->DUTY_STEP[UP] 	= 0.005f;
+	this->DUTY_STEP[DOWN] = 0.005f;
 }
 
 void IncConduct::evaluate()
 {
 	
-	this->read_adc();
+	updateValues();
 	
 	
 	
@@ -37,9 +40,8 @@ void IncConduct::evaluate()
 		}
 	}
 		
-	duty[PREVIOUS] = duty[NOW];
-	duty[NOW] = next_duty;
+	
 	set_duty(next_duty);
-	voltage[PREVIOUS] = voltage[NOW];
-	current[PREVIOUS] = current[NOW];
+	delay_nms(10);
+	
 }
